@@ -1,0 +1,125 @@
+<!--
+	Cypher/Neo4j Crash Course | Special Topics: Graph Databases
+	faw.jku.at | @mbahara
+-->
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Docker Installation Guide - JKU</title>
+    <link rel="stylesheet" href="assets/css/docker.css" />
+  </head>
+  <body>
+    <h1>Docker Installation Guide</h1>
+    <p>
+      Follow the instructions for your specific OS to get Neo4j running locally.
+    </p>
+
+    <div class="os-box">
+      <h2>Windows</h2>
+      <h3>Method A: Graphical Installer</h3>
+      <p>Download and run the official Docker Desktop installer:</p>
+      <a
+        href="https://docs.docker.com/desktop/setup/install/windows-install/"
+        target="_blank"
+        class="btn"
+        >Download Docker Desktop for Windows</a
+      >
+
+      <h3>Method B: via Command Line (winget)</h3>
+      <p>Open PowerShell as Administrator and run:</p>
+      <div class="code-container">
+        <span id="win-winget" class="code-text"
+          >winget install -e --id Docker.DockerDesktop</span
+        >
+        <button
+          class="copy-icon-btn"
+          onclick="copyText('win-winget', this)"
+          title="Copy to clipboard"
+        >
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"
+            />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="os-box">
+      <h2>macOS</h2>
+      <h3>Method A: Graphical Installer</h3>
+      <p>
+        Choose the version matching your chip (Intel or Apple Silicon/M1/M2):
+      </p>
+      <a
+        href="https://docs.docker.com/desktop/setup/install/mac-install/"
+        target="_blank"
+        class="btn"
+        >Download Docker Desktop for Mac</a
+      >
+
+      <h3>Method B: via Command Line (Homebrew)</h3>
+      <div class="code-container">
+        <span id="mac-brew">brew install --cask docker</span>
+        <br />
+        <button
+          class="copy-icon-btn"
+          onclick="copyText('mac-brew', this)"
+          title="Copy to clipboard"
+        >
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"
+            />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="os-box">
+      <h2>Linux (Ubuntu/Debian)</h2>
+      <h3>Method A: Desktop GUI</h3>
+      <a
+        href="https://docs.docker.com/desktop/setup/install/linux-install/"
+        target="_blank"
+        class="btn"
+        >Install Docker Desktop for Linux</a
+      >
+
+      <h3>Method B: Quick Script</h3>
+      <p>Run the official convenience script in your terminal:</p>
+      <div class="code-container">
+        <span id="linux-script"
+          >curl -fsSL https://get.docker.com -o get-docker.sh && sudo sh
+          get-docker.sh</span
+        >
+        <br />
+        <button
+          class="copy-icon-btn"
+          onclick="copyText('linux-script', this)"
+          title="Copy to clipboard"
+        >
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"
+            />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <h2>Final Step: Run Neo4j</h2>
+    <p>
+      Once Docker is installed and running, go back to the main lab page and run
+      the Neo4j container command. To verify Docker is working, type this in
+      your terminal:
+    </p>
+    <div class="code-container">docker --version</div>
+
+    <!-- Scripts -->
+    <script src="assets/js/docker.js"></script>
+  </body>
+</html>

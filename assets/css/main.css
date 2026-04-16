@@ -1,0 +1,227 @@
+@import url(fontawesome-all.min.css);
+
+/*
+	Cypher/Neo4j Crash Course | Special Topics: Graph Databases | 2026
+	faw.jku.at | @mbahara
+*/
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 20px 50px;
+  background: #f5f5f5;
+}
+
+.header {
+  background: #3f51b5;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 6px;
+}
+
+h1 {
+  text-align: center;
+}
+
+.container {
+  padding: 20px;
+
+  a {
+    color: #3f51b5;
+  }
+
+  a:hover {
+    color: #2196f3;
+  }
+}
+
+.image-container {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.image-container img {
+  align-content: center;
+  max-width: 100%;
+  height: auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.caption {
+  font-size: 0.9em;
+  color: #555;
+  margin-top: 5px;
+}
+
+h3 {
+  color: #3f51b5;
+}
+
+.section {
+  padding: 10px 50px;
+  margin-bottom: 20px;
+  border-radius: 6px;
+}
+
+.card {
+  background: white;
+  padding: 15px;
+  margin: 10px 0;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+button {
+  margin: 5px 5px 5px 0;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.step-tag {
+  display: inline-block;
+  background: #3f51b5;
+  color: white;
+  padding: 2px 10px;
+  border-radius: 12px;
+  margin-top: 10px;
+}
+
+.control {
+  background: #1ba9cc;
+  color: white;
+}
+
+.copy {
+  background: #4ca0af;
+  color: white;
+}
+
+.copy.copied {
+  background: #4caf50;
+}
+
+.open {
+  background: #2196f3;
+  color: white;
+}
+
+.info p {
+  margin: 5px 0;
+}
+
+.comment {
+  color: #3f51b5;
+  font-size: small;
+}
+
+pre {
+  background: #4d4e48;
+  color: #f8f8f2;
+  padding: 10px;
+  border-radius: 5px;
+  overflow-x: auto;
+}
+
+.hidden {
+  display: none;
+}
+
+code {
+  font-size: larger;
+}
+
+.ex-label {
+  cursor: text;
+  user-select: text;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ex-label:hover {
+  color: inherit;
+  background: none;
+  text-decoration: none;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  display: inline-block;
+  margin-left: 8px;
+  vertical-align: middle;
+  animation: spin 1s linear infinite;
+}
+
+button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.modal-overlay {
+  display: none; /* Hidden by default */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7); /* Dims the background */
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.credentials-box {
+  background: #f4f7f6;
+  padding: 15px;
+  margin: 20px 0;
+  border-radius: 8px;
+  text-align: left;
+  font-family: monospace;
+}
+
+.modal-content h3 {
+  margin-top: 0;
+  color: #2c3e50;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: #7f8c8d;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 0.9em;
+}
+
+.btn-link:hover {
+  color: #2c3e50;
+}

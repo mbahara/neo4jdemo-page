@@ -1,0 +1,80 @@
+/*
+	Cypher/Neo4j Crash Course | Special Topics: Graph Databases
+	faw.jku.at | @mbahara
+*/
+
+body {
+  font-family: sans-serif;
+  line-height: 1.6;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  color: #333;
+}
+h1 {
+  color: #003e7e;
+  border-bottom: 2px solid #eee;
+}
+h2 {
+  color: #0056b3;
+  margin-top: 30px;
+  background: #f0f7ff;
+  padding: 10px;
+  border-radius: 4px;
+}
+.os-box {
+  border: 1px solid #ddd;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+.code-container {
+  background: #282c34;
+  color: #abb2bf;
+  padding: 16px;
+  border-radius: 6px;
+  margin: 15px 0;
+  font-family: "Fira Code", "Courier New", monospace;
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.code-text {
+  word-break: break-all;
+  margin-right: 40px;
+}
+.copy-icon-btn {
+  background: #3e4451;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  position: absolute;
+  right: 12px;
+  top: 12px;
+}
+.copy-icon-btn:hover {
+  background: #528bff;
+}
+.copy-icon-btn svg {
+  fill: #abb2bf;
+  width: 18px;
+  height: 18px;
+}
+.copy-icon-btn.copied svg {
+  fill: #98c379;
+}
+.btn {
+  background: #007cc1;
+  color: white;
+  padding: 8px 15px;
+  text-decoration: none;
+  border-radius: 4px;
+  display: inline-block;
+  margin-top: 10px;
+}

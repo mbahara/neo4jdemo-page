@@ -1,0 +1,1299 @@
+<!doctype html>
+<!--
+	Cypher/Neo4j Crash Course | Special Topics: Graph Databases
+	faw.jku.at | @mbahara
+-->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cypher/Neo4j Demo</title>
+    <link rel="stylesheet" href="assets/css/main.css" />
+  </head>
+  <body>
+    <header class="header">
+      <h1>Cypher/Neo4j Demo</h1>
+    </header>
+
+    <div class="container">
+      <figure id="fig1" class="image-container">
+        <img
+          src="images/graph-dbs-overview.gif"
+          alt="Graph Databases Features"
+        />
+        <figcaption class="caption">
+          Figure 1: Property Graph Features Supported by Graph Database Systems
+          =>
+          <a
+            href="https://ieeexplore.ieee.org/abstract/document/9115617"
+            target="_blank"
+            >Link to the source</a
+          >
+        </figcaption>
+      </figure>
+
+      <!-- Database Connection -->
+      <section class="section">
+        <h2>Connect to Neo4j Instance</h2>
+        <div class="card">
+          <div class="info">
+            <p><strong>Connect URL:</strong> bolt://localhost:7687</p>
+            <p><strong>Authentication:</strong> Username / Password</p>
+            <p><strong>Username:</strong> neo4j</p>
+            <p><strong>Password:</strong> our_password_v1</p>
+          </div>
+          <p>Click connect.</p>
+
+          <h3>Option 1: Start Our Online Instance</h3>
+          <p>
+            Use Neo4j Sandbox for a cloud-hosted instance (requires a free
+            account).
+          </p>
+          <button class="open" onclick="openNeo4jSandbox()">
+            Open Blank Sandbox
+          </button>
+          <p class="comment">
+            Note: Create an account and log in. Then, enter the credentials that
+            were downloaded automatically while the sandbox was created. Start
+            the sandbox.
+          </p>
+
+          <h3>Option 2: Deploy Neo4j with Docker</h3>
+          <p>
+            If we do not want to create an account, we can setup Neo4j using
+            Docker.
+            <br /><br />
+            <strong>ATTENTION:</strong> This requires Docker to be installed on
+            our machine. If we do not have it yet, follow this
+            <a href="docker-guide.html" target="_blank"
+              >Step-by-Step Docker Installation Guide</a
+            >.
+          </p>
+
+          <div class="step-tag">Step 1: Run the Command</div>
+          <p>
+            Open terminal (Terminal on macOS/Linux, PowerShell on Windows) and
+            run the appropriate command:
+          </p>
+
+          <pre id="docker-run">
+docker run --name neo4j-demo -p 7474:7474 -p 7687:7687 -d -e NEO4J_AUTH=neo4j/our_password_v1 neo4j:latest</pre
+          >
+          <button class="copy" onclick="copy('docker-run', this)">
+            Copy Command
+          </button>
+
+          <p>or install a specific version</p>
+          <pre id="spec-version">
+docker run --name neo4j-demo -p 7474:7474 -p 7687:7687 -d -e NEO4J_AUTH=neo4j/our_password_v1 neo4j:2026.02.2</pre
+          >
+          <button class="copy" onclick="copy('spec-version', this)">
+            Copy Command
+          </button>
+
+          <br />
+          <br />
+          <div class="step-tag">Step 2: Access the Browser</div>
+          <p>Once the container is up running, access the interface:</p>
+          <button class="open" onclick="openBrowser()">
+            Open Neo4j Browser
+          </button>
+          <p class="comment">
+            Note: If prompted for credentials, type the given username and
+            password.
+          </p>
+
+          <h3>Option 3: Run Our Prepared Web Application</h3>
+          <p>
+            We have prepared a Java application with frontend that sets up Neo4j
+            DB on the machine. Download the jar file from our
+            <a
+              href="https://github.com/mbahara/neo4j-demo/releases/tag/v1.0.0"
+              target="_blank"
+              >GitHub page</a
+            >. Open a terminal and execute the following command to run the
+            application:
+          </p>
+          <pre id="app-version">java -jar neo4j-demo-0.0.1.jar</pre>
+          <button class="copy" onclick="copy('app-version', this)">
+            Copy Command
+          </button>
+        </div>
+      </section>
+
+      <!-- Cypher Intro & Basics -->
+      <section class="section">
+        <h2>Cypher Basics</h2>
+
+        <div class="card">
+          <h3>Basic Building Blocks</h3>
+          <p><b>Nodes</b> are defined using parentheses:</p>
+          <pre id="bb1">() or (:Pokemon) or or (p1:Pokemon)</pre>
+
+          <p><b>Edges</b> are defined using square brackets:</p>
+          <pre id="bb2">[] or [:BATTLES] or [rel:BATTLES]</pre>
+
+          <p>
+            Nodes and edges are <b>connected</b> by dashes and the
+            lesser/greater sign:
+          </p>
+          <pre id="bb3">(a)-[:BATTLES]->(b) or (a)<-[:BATTLES]-(b)</pre>
+          <p class="comment">
+            <i
+              ><strong>Edge Direction:</strong> The "<code>-</code>" denotes the
+              outgoing edge direction and the "<code>-&gt;</code>" denotes the
+              incoming edge direction. In Cypher, we MUST specify a direction
+              using <code>-&gt;</code> or <code>&lt;-</code> when
+              <strong>creating</strong> a relationship. However, when
+              <strong>querying</strong>, we can omit the arrowhead (e.g.,
+              <code>(n)-[:BATTLES]-(m)</code>) to find connections in either
+              direction.</i
+            >
+          </p>
+
+          <p>
+            Nodes and edges can have multiple <b>labels</b> (each starting with
+            a colon), e.g.:
+          </p>
+          <pre id="bb4">
+(p1:Pokemon:Electric:Starter {identifier:'pikachu'})-[:BATTLES]->(p2:Pokemon:Grass {identifier:'bulbasaur'})
+</pre
+          >
+          <p class="comment">
+            <i>
+              As depicted in <a href="#fig1">Figure 1</a>, in Neo4j nodes can
+              have multiple labels (e.g., Pokémon, Electric, Starter), but edges
+              have only one type. There is no order for writing the labels in a
+              Cypher query - important information is: either there is a label
+              or not. Labels help to group the nodes (view sub-data-graphs).
+              Using multiple labels will create an intersection of the data
+              graph nodes.
+            </i>
+          </p>
+
+          <p>
+            <b>Properties</b> on nodes and edges are defined using curly
+            brackets:
+          </p>
+          <pre id="bb5">
+(p1:Pokemon {identifier:'pikachu', type:'electric', level:25})-[:BATTLES {result:'win', location:'Kanto'}]->(p2:Pokemon {identifier:'bulbasaur', type:'grass'})
+</pre
+          >
+          <p class="comment">
+            <i
+              >Properties are key-value pairs that describe nodes and edges.
+              Keys must be strings, while values can be
+              <strong>Strings, Integers, Floats, or Booleans</strong>. Allowed
+              characters for keys include alphabets, numbers, and underscores
+              (starting with a letter).</i
+            >
+          </p>
+
+          <br />
+
+          <h3>Basic Cypher Commands</h3>
+
+          <p>
+            Write data using <strong><code>CREATE</code></strong
+            >:
+          </p>
+          <pre id="q1">
+CREATE (p:Pokemon {identifier: 'myPokemon', type: 'fire'});</pre
+          >
+          <pre id="q2">CREATE (n:Label)-[r:TYPE]->(m:Label)</pre>
+
+          <p>
+            Read data using <strong><code>MATCH</code></strong
+            >:
+          </p>
+          <pre id="q3">MATCH (p:Pokemon) RETURN p;</pre>
+          <p class="comment">
+            <i>=> returns all nodes with the label "Pokemon".</i>
+          </p>
+
+          <pre id="q4">MATCH (p:Pokemon) RETURN p.identifier LIMIT 25;</pre>
+          <p class="comment">
+            <i
+              >=> returns the "identifier" property of 25 nodes with the label
+              "Pokemon".</i
+            >
+          </p>
+
+          <pre id="q5">
+MATCH (p:Pokemon) WHERE p.identifier = "pikachu" RETURN p;</pre
+          >
+          <p class="comment">
+            <i
+              >=> returns the Pokémon node with the identifier "pikachu"
+              (FILTERING).</i
+            >
+          </p>
+
+          <p>
+            Update data using <strong><code>SET</code></strong
+            >:
+          </p>
+          <pre id="q6">
+MATCH (p:Pokemon) 
+WHERE p.identifier = "myPokemon" 
+SET p.identifier = "myNewPokemon";</pre
+          >
+
+          <p>
+            With <strong><code>MERGE</code></strong> find (if exists) or create
+            a pattern:
+          </p>
+          <pre id="q7">
+MATCH
+  (a:Pokemon {identifier: $value1}),
+  (b:Pokemon {identifier: $value2})
+MERGE (a)-[r:BATTLES]->(b)</pre
+          >
+
+          <p>
+            Delete data using <strong><code>DELETE</code></strong> or
+            <strong><code>REMOVE</code></strong
+            >:
+          </p>
+          <pre id="q8">
+MATCH (p1:Pokemon)-[r:evolves_to]-(p2:Pokemon)
+WHERE r.trigger= 'use_item'
+DELETE r</pre
+          >
+          <pre id="q9">
+MATCH (n:Pokemon)
+WHERE n.identifier = "eevee"
+DETACH DELETE n;</pre
+          >
+          <p class="comment">
+            <i
+              >=> deletes the node with all its relationships. Without
+              <strong><code>DETACH</code></strong> an error will be thrown if
+              the given node is attached to more than one relationship.</i
+            >
+          </p>
+
+          <pre id="q10">
+MATCH (n:Label)
+WHERE n.id = 123
+REMOVE n.color</pre
+          >
+          <p class="comment">
+            <i
+              ><strong><code>REMOVE</code></strong> helps delete a property from
+              a node or an edge.</i
+            >
+          </p>
+        </div>
+      </section>
+
+      <!-- Docs -->
+      <section class="section">
+        <h2>Official Cypher Manual</h2>
+        <div class="card">
+          <p>
+            Read more in:
+            <a
+              href="https://neo4j.com/docs/cypher-manual/current/"
+              target="_blank"
+              >Open Official Manual</a
+            >
+            and
+            <a
+              href="https://neo4j.com/docs/cypher-cheat-sheet/25/all/"
+              target="_blank"
+              >Cypher Cheat Sheet</a
+            >.
+          </p>
+          <p>
+            Apart from the basic Neo4j commands, there are many other
+            possibilities to use functions or add custom functions extending the
+            built-in functions to play more with the data - depending on the
+            specific usecase. Read more about
+            <a
+              href="https://neo4j.com/docs/cypher-manual/current/functions/"
+              target="_blank"
+              >Functions</a
+            >,
+            <a
+              href="https://neo4j.com/docs/snowflake-graph-analytics/current/algorithms/"
+              target="_blank"
+              >Graph Algorithms</a
+            >
+            and
+            <a
+              href="https://neo4j.com/docs/aura/apoc/#_apoc_cypher"
+              target="_blank"
+              >APOC Library</a
+            >.
+          </p>
+          <p>
+            Read more about
+            <a
+              href="https://neo4j.com/docs/cypher-manual/current/patterns/"
+              target="_blank"
+              >Path and Graph Pattern definitions</a
+            >.
+          </p>
+        </div>
+      </section>
+
+      <!-- Hands-on Exercise -->
+      <section class="section">
+        <h2>In-Class Exercises</h2>
+
+        <div class="card">
+          <h3>First DB entries</h3>
+          <p>Let's see what do we have in the DB, we created:</p>
+          <pre id="ex1">MATCH (n) RETURN n;</pre>
+          <button class="copy" onclick="copy('ex1', this)">Copy</button>
+          <p class="comment">
+            <i>The DB is empty upon creation --> no surprises!</i>
+          </p>
+          <p>Now let's create our first entry in DB:</p>
+          <pre id="ex2">CREATE ();</pre>
+          <button class="copy" onclick="copy('ex2', this)">Copy</button>
+
+          <p>
+            If we now see what do we have in the DB, we can observe that the
+            previous command only inserted an empty node without a label or any
+            content. A rather not interesting or useful node ^^ so, now let's
+            create interesting nodes.
+          </p>
+          <p class="comment">
+            <i
+              >Neo4j provides the opportunity to view the content of the
+              database (<strong><code>RETURN</code></strong> keyword is used),
+              in following different formats:
+              <ul class="comment">
+                <li>Graph: network connected nodes via edges</li>
+                <li>
+                  Table: the same as a spread sheet of an MS Excel with columns
+                  and rows.
+                </li>
+                <li>
+                  RAW: under "Result" we can read the result of the evaluated
+                  query in the DB in JSON format which is also returned if the
+                  data is accessed via API.
+                </li>
+              </ul>
+            </i>
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>Exercise 1 - <code>CRUD</code>-based operations</h3>
+          <p>
+            Create a node with the label <strong>Student</strong> whose first
+            name and last name is <i>Max Mustermann</i> respectively.
+          </p>
+          <button onclick="toggleSolution('s1-container', this)">
+            Show Solution
+          </button>
+          <div id="s1-container" class="hidden">
+            <pre id="s1">
+CREATE (s:Student {firstname: 'Max', lastname: 'Mustermann'}) RETURN s;</pre
+            >
+            <button class="copy" onclick="copy('s1', this)">Copy</button>
+          </div>
+
+          <p>
+            Create a <strong>Professor</strong> node. The professor's first name
+            is <i>Martina</i> and the last name is <i>Musterfrau</i>.
+          </p>
+          <button onclick="toggleSolution('s2-container', this)">
+            Show Solution
+          </button>
+          <div id="s2-container" class="hidden">
+            <pre id="s2">
+CREATE (p:Professor {firstname: 'Martina', lastname: 'Musterfrau'}) RETURN p;</pre
+            >
+            <button class="copy" onclick="copy('s2', this)">Copy</button>
+          </div>
+
+          <p>
+            Add the information that Max Mustermann's matriculation number is
+            <i>12015896</i>.
+          </p>
+          <button onclick="toggleSolution('s3-container', this)">
+            Show Solution
+          </button>
+          <div id="s3-container" class="hidden">
+            <pre id="s3">
+MATCH (s:Student {firstname: 'Max', lastname: 'Mustermann'}) SET s.matrNr = '12015896';</pre
+            >
+            <button class="copy" onclick="copy('s3', this)">Copy</button>
+          </div>
+
+          <p>
+            Get <strong>Student</strong> nodes with the first name: <i>Max</i>.
+          </p>
+          <button onclick="toggleSolution('s4-container', this)">
+            Show Solution
+          </button>
+          <div id="s4-container" class="hidden">
+            <pre id="s4">
+MATCH (s:Student) WHERE s.firstname = 'Max' RETURN s;</pre
+            >
+            <button class="copy" onclick="copy('s4', this)">Copy</button>
+          </div>
+
+          <p>
+            Now we know that Professor Martina teaches a
+            <strong>Course</strong> with the topic <i>GraphDBs</i>.
+          </p>
+          <button onclick="toggleSolution('s5-container', this)">
+            Show Solution
+          </button>
+          <div id="s5-container" class="hidden">
+            <pre id="s5">
+MATCH
+  (p:Professor {firstname: 'Martina', lastname: 'Musterfrau'}),
+  (c:Course {topic: 'GraphDBs'})
+MERGE (p)-[r:TEACHES]->(c);</pre
+            >
+            <button class="copy" onclick="copy('s5', this)">Copy</button>
+          </div>
+
+          <p>Search for any nodes that are not <strong>Student</strong>.</p>
+          <button onclick="toggleSolution('s6-container', this)">
+            Show Solution
+          </button>
+          <div id="s6-container" class="hidden">
+            <pre id="s6">MATCH (n) WHERE NOT n:Student RETURN n;</pre>
+            <button class="copy" onclick="copy('s6', this)">Copy</button>
+          </div>
+
+          <p>List the current node labels in the database.</p>
+          <button onclick="toggleSolution('s7-container', this)">
+            Show Solution
+          </button>
+          <div id="s7-container" class="hidden">
+            <pre id="s7">MATCH (n) RETURN labels(n);</pre>
+            <button class="copy" onclick="copy('s7', this)">Copy</button>
+          </div>
+
+          <p>Display the node labels count in an ascending order.</p>
+          <button onclick="toggleSolution('s8-container', this)">
+            Show Solution
+          </button>
+          <div id="s8-container" class="hidden">
+            <pre id="s8">
+MATCH (n) RETURN size(labels(n)) as count ORDER BY count ASC;</pre
+            >
+            <button class="copy" onclick="copy('s8', this)">Copy</button>
+          </div>
+
+          <p>Remove the empty node, which we first inserted in the DB.</p>
+          <button onclick="toggleSolution('s9-container', this)">
+            Show Solution
+          </button>
+          <div id="s9-container" class="hidden">
+            <pre id="s9">MATCH (n) WHERE size(labels(n))=0 DELETE n;</pre>
+            <button class="copy" onclick="copy('s9', this)">Copy</button>
+            <p class="comment">
+              <i
+                >We use <strong>DELETE</strong> only when we are 100% sure we
+                want to delete the node(s). In productive environment, we use
+                the query with <strong>RETURN</strong> and then if we are happy
+                with the result of the query, use the <strong>DELETE</strong> to
+                get rid of the node(s).</i
+              >
+            </p>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Exercise 2 - introducing the <code>WITH</code> keyword</h3>
+          <p>
+            Obviously, <strong>Student</strong>s attend
+            <strong>Course</strong>s. So, a student <i>Jane Doe</i> attends the
+            <i>GraphDBs</i> and recieves a <i>grade</i> for it - the default
+            grade before the exam is 0. Add this information to the database.
+          </p>
+          <button onclick="toggleSolution('ex2.1-container', this)">
+            Show Solution
+          </button>
+
+          <div id="ex2.1-container" class="hidden">
+            <pre id="ex2.1">
+CREATE (s:Student {firstname: 'Jane', lastname: 'Doe'}) 
+WITH s
+MATCH (c:Course {topic: 'Grpah Databases'})
+CREATE (s)-[:ATTENDS {grade: 0}]->(c)
+RETURN *</pre
+            >
+            <button class="copy" onclick="copy('ex2.1', this)">Copy</button>
+            <p class="comment">
+              <i
+                >The <strong>WITH</strong> keyword allows us to chain query
+                parts together. It acts as a boundary: only the variables we
+                specify are "passed through" to the next part of the query and
+                they are available in the remainder of the query.</i
+              >
+            </p>
+            <p>
+              However, if the course does not exist, the entire query stops and
+              the relationship will not be created, even though the student node
+              was created in the first line. <br /><strong>Attention:</strong>
+              notice the difference between the following two queries, where the
+              first one executes successfully and the second one leads to an
+              error:
+            </p>
+            <pre id="ex2.1.1">
+MATCH (n:Student) WITH n as student WHERE student.firstname = 'Jane' MATCH (student)-[:ATTENDS]-(c:Course) RETURN c</pre
+            >
+            <button class="copy" onclick="copy('ex2.1.1', this)">Copy</button>
+            <pre id="ex2.1.2">
+MATCH (s:Student)-[:ATTENDS]->(c:Course) WITH s as student WHERE student.firstname = 'Jane' RETURN c</pre
+            >
+            <button class="copy" onclick="copy('ex2.1.2', this)">Copy</button>
+            <p class="comment">
+              <i
+                >If we add the <code>c</code> after the
+                <strong>WITH</strong> keyword, its scope of the life gets
+                extended, and then we get no error.
+              </i>
+            </p>
+          </div>
+
+          <p>John Doe also attends the course GraphDBs.</p>
+          <button onclick="toggleSolution('ex2.2-container', this)">
+            Show Solution
+          </button>
+
+          <div id="ex2.2-container" class="hidden">
+            <pre id="ex2.2.1">
+MERGE (s:Student {firstname:'John', lastname: 'Doe'})
+WITH s
+MERGE (c:Course {topic: 'GraphDBs'})
+WITH s, c
+MERGE (s)-[:ATTENDS {grade: 0}]->(c)
+RETURN s, c;</pre
+            >
+            <button class="copy" onclick="copy('ex2.2.1', this)">Copy</button>
+            <p class="comment">
+              <i>The following query would not be desirable:</i>
+            </p>
+            <pre id="ex2.2.2">
+MERGE (s:Student {firstname:'John2', lastname: 'Doe'})-[:ATTENDS {grade: 0}]->(c:Course {topic: 'GraphDBs'})
+RETURN s, c;</pre
+            >
+            <button class="copy" onclick="copy('ex2.2.2', this)">Copy</button>
+            <p class="comment">
+              <i
+                >There are two 'GraphDBs' courses. One listened by John and the
+                other by John2. This is because the DB engine tries to find a
+                student named John2 and a course with the topic GraphDBs and
+                these two nodes have to have an edge that connects them. Since
+                this does not exist, it creates both nodes and the edge between
+                them altogether.</i
+              >
+            </p>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Exercise 3</h3>
+          <p>Jane Doe graduated. So, remove the node from the database.</p>
+          <button onclick="toggleSolution('ex3.1-container', this)">
+            Show Solution
+          </button>
+          <div id="ex3.1-container" class="hidden">
+            <pre id="ex3.1">
+MATCH (s:Student {firstname:'Jane', lastname: 'Doe'})
+DELETE s;</pre
+            >
+            <button class="copy" onclick="copy('ex3.1', this)">Copy</button>
+            <p class="comment">
+              <i
+                >The error indicates that the node has edges and thus, we are
+                not able to delete it. To delete a node with edges, we first
+                detach the node and then delete it safely. Use the keyword
+                <strong><code>DETACH</code></strong> for this mean.</i
+              >
+            </p>
+            <pre id="ex3.2">
+MATCH (s:Student {firstname:'Jane', lastname: 'Doe'})
+DETACH DELETE s;</pre
+            >
+            <button class="copy" onclick="copy('ex3.2', this)">Copy</button>
+          </div>
+
+          <p>Delete the matriculation number of Max Mustermann.</p>
+          <button onclick="toggleSolution('ex3.3-container', this)">
+            Show Solution
+          </button>
+          <div id="ex3.3-container" class="hidden">
+            <pre id="ex3.3">
+MATCH (s:Student {firstname:'Max', lastname: 'Mustermann'})
+REMOVE s.matrNr;</pre
+            >
+            <button class="copy" onclick="copy('ex3.3', this)">Copy</button>
+          </div>
+
+          <p>
+            John Doe provides us with an email has his contact and Max
+            Mustermann only his phone number. Insert these properties to the
+            student's node. For a notification system, we want to query whatever
+            contact method is available. If the property yields
+            <code>null</code>, inform that there is no contact info for the
+            student available.
+          </p>
+          <button onclick="toggleSolution('ex3.4-container', this)">
+            Show Solution
+          </button>
+          <div id="ex3.4-container" class="hidden">
+            <pre id="ex3.4">
+MATCH (s1:Student {firstname:'John', lastname: 'Doe'})
+SET s1.email = "john.doe@example.com"
+MATCH (s2:Student {firstname:'Max', lastname: 'Mustermann'})
+SET s2.phone = "0666 000 000 00"
+
+MATCH (s:Student)
+RETURN s.firstname + " " + s.lastName AS name, coalesce(s.email, s.phone, "No contact info") AS contact_method
+
+// or
+// MATCH (s:Student)
+// RETURN coalesce(s.firstname, "") + " " + coalesce(s.lastName, "") AS name, coalesce(s.email, s.phone, "No contact info") AS contact_method
+</pre
+            >
+            <button class="copy" onclick="copy('ex3.4', this)">Copy</button>
+            <p class="comment">
+              <i>
+                <strong><code>coalesce()</code></strong> is a scalar function,
+                that returns the first on-null value in a list of expression.</i
+              >
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Database Control -->
+      <section class="section">
+        <h2>DB Controls</h2>
+        <div class="card">
+          <!-- <button class="control" onclick="executeClear()">
+            Clear Database
+          </button> -->
+          <button class="control" onclick="load('pokemon', event)">
+            Load Pokémon
+          </button>
+          <p class="comment">
+            <i>The command above works only for the application</i>
+          </p>
+          <!-- <button class="control" onclick="load('map', event)">Load Map</button> -->
+          <button class="control" onclick="load('movie', event)">
+            Access Movie Dataset
+          </button>
+        </div>
+        <div id="customModal" class="modal-overlay">
+          <div class="modal-content">
+            <h3>Access Credentials</h3>
+            <p>Use the following credentials for the Movie dataset:</p>
+            <div class="credentials-box">
+              <p><strong>Username:</strong> recommendations</p>
+              <p><strong>Password:</strong> recommendations</p>
+              <p><strong>Database:</strong> recommendations</p>
+            </div>
+            <div class="modal-actions">
+              <button id="modalCloseBtn" class="control">
+                Proceed to Dataset
+              </button>
+              <button id="modalCancelBtn" class="btn-link">Close</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- DB Deep Dive -->
+      <section class="section">
+        <h2>DB Deep Dive</h2>
+        <div class="card">
+          <p>Discover the nodes available in the database.</p>
+          <pre id="d1">MATCH (n) RETURN n;</pre>
+          <button class="copy" onclick="copy('d1', this)">Copy</button>
+          <p class="comment">
+            <i
+              >In large databases, the command is used with
+              <code>LIMIT</code> keyword, otherwise it is a heavy process. Neo4j
+              uses <i>25</i> as a default value for the <code>LIMIT</code>.</i
+            >
+          </p>
+          <pre id="d2">MATCH (n) RETURN n LIMIT 25;</pre>
+          <button class="copy" onclick="copy('d2', this)">Copy</button>
+
+          <p>Discover nodes with (a) specific label(s).</p>
+          <pre id="d3">MATCH (p:Pokemon) RETURN p LIMIT 25;</pre>
+          <button class="copy" onclick="copy('d3', this)">Copy</button>
+          <pre id="d4">MATCH (t:Type) RETURN t;</pre>
+          <button class="copy" onclick="copy('d4', this)">Copy</button>
+          <pre id="d5">MATCH (p:Pokemon), (t:Type) RETURN p, t LIMIT 25;</pre>
+          <button class="copy" onclick="copy('d5', this)">Copy</button>
+          <p class="comment">
+            <i
+              >Toggle between views (graph or table) on the Neo4j browser to see
+              if more information is visible.</i
+            >
+          </p>
+          <pre id="d5.1">
+MATCH (n) WHERE (n:Pokemon) or (n:Type) RETURN n LIMIT 25;</pre
+          >
+          <button class="copy" onclick="copy('d5.1', this)">Copy</button>
+
+          <p>Discover nodes and edges in the database.</p>
+          <pre id="d6">
+MATCH (p:Pokemon)-[:HAS_TYPE]-(t:Type) RETURN * LIMIT 25;</pre
+          >
+          <button class="copy" onclick="copy('d6', this)">Copy</button>
+          <p class="comment">
+            <i
+              >Same as SQL, the <code>*</code> gives us everything that is saved
+              in a variable. In this case, the edge is not stored in a variable,
+              so it is not returned by the <code>*</code>. However, since the
+              <code>p</code> and <code>t</code> are stored, the browser returns
+              the edges too.</i
+            >
+          </p>
+
+          <p>Discover nodes with multiple labels.</p>
+          <pre id="d7">MATCH (p:Pokemon:Legendary) RETURN p;</pre>
+          <button class="copy" onclick="copy('d7', this)">Copy</button>
+          <p class="comment">
+            <i
+              >The command yields the same result as:
+              <code>MATCH (p:Legendary) RETURN p;</code></i
+            >
+          </p>
+
+          <p>Discover nodes that have specific property value (= Filtering).</p>
+          <pre id="d8">
+MATCH (p:Pokemon) WHERE p.identifier = 'pikachu' RETURN p;</pre
+          >
+          <button class="copy" onclick="copy('d8', this)">Copy</button>
+          <p class="comment">
+            <i
+              >The command yields the same result as:
+              <code
+                >MATCH (p:Pokemon {identifier: 'pikachu'}) RETURN p;</code
+              ></i
+            >
+          </p>
+          <ul>
+            <li>
+              <p>
+                We can also filter using functions and boolean expression
+                combinations.
+              </p>
+              <pre id="d9">
+MATCH (p:Pokemon) WHERE p.identifier STARTS WITH 'pi' RETURN p;</pre
+              >
+              <button class="copy" onclick="copy('d9', this)">Copy</button>
+              <pre id="d10">
+MATCH (p:Pokemon) 
+WHERE p.identifier STARTS WITH 'pi' OR p.identifier = 'bulbasaur' 
+RETURN p;</pre
+              >
+              <button class="copy" onclick="copy('d10', this)">Copy</button>
+              <pre id="d11">
+MATCH (p:Pokemon) 
+WHERE p.identifier STARTS WITH 'pi' AND p.id <= 150 
+RETURN p;</pre
+              >
+              <button class="copy" onclick="copy('d11', this)">Copy</button>
+            </li>
+            <li>
+              <p>
+                We can also filter using paths. Let us, for instance, query the
+                fire Pokémon where their id is less or equal to 150.
+              </p>
+              <pre id="d12">
+MATCH (p:Pokemon)-[:HAS_TYPE]-(:Type {identifier: 'fire'}) 
+WHERE p.id <= 150 
+RETURN *;</pre
+              >
+              <button class="copy" onclick="copy('d12', this)">Copy</button>
+              <p class="comment">
+                <i
+                  >Since we did not assign a variable to the
+                  <strong><code>:Type</code></strong
+                  >, we could use <code>*</code> to only get the
+                  <i>Pokémon</i> nodes.</i
+                >
+              </p>
+            </li>
+          </ul>
+
+          <p>
+            Nodes can have multiple (incoming/outgoing) edges of the same type;
+            they differ in edge property then. Mapped to the Pokémon world,
+            Pokémon might have more than one type. So, we could query all fire
+            Pokémon that have fire as secondary type.
+          </p>
+          <pre id="d13">
+MATCH (p:Pokemon)-[:HAS_TYPE {slot: 2}]-(:Type {name: 'fire'}) RETURN *;</pre
+          >
+          <button class="copy" onclick="copy('d13', this)">Copy</button>
+
+          <h3>Indexes</h3>
+          <p>
+            In Neo4j, an <code>index</code> is a redundant data structure that
+            allows the engine to find "entry points" into the graph without
+            scanning every single node. Similar to an index at the back of a
+            textbook: instead of reading every page to find Pikachu, we look at
+            the index, find the page number, and jump straight there.
+          </p>
+          <p>
+            <strong><code>CREATE INDEX</code></strong
+            >: When we create an index on a specific <code>Label</code> and
+            <code>Property</code>, Neo4j builds a B-Tree (or similar structure)
+            that maps property values to internal node IDs. E.g.,
+          </p>
+          <pre id="i1">
+CREATE INDEX pokemon_identifier_index IF NOT EXISTS
+FOR (p:Pokemon) ON (p.identifier);
+
+// For evaluating the following query, the DB engine then uses the index
+MATCH (p:Pokemon {identifier: 'mewtwo'})
+RETURN p;</pre
+          >
+          <button class="copy" onclick="copy('i1', this)">Copy</button>
+          <p class="comment">
+            <i
+              >If we have, for example, 10,000 Pokémon. Finding one by
+              identifier without an index requires a
+              <code>NodeByLabelScan</code> (checking all 10,000). With index,
+              the DB engine looks at the "identifier" index, finds the ID for
+              'mewtwo', and performs a <code>NodeIndexSeek</code>.</i
+            >
+          </p>
+          <p>A composite index example:</p>
+          <pre id="i2">
+CREATE INDEX student_name_index IF NOT EXISTS
+FOR (s:Student) ON (s.firstname, s.lastname);
+
+// Optimized for:
+MATCH (s:Student {firstname: 'Max', lastname: 'Mustermann'})
+RETURN s;
+</pre
+          >
+          <p>
+            An index on a relationship: If we have millions of battles, finding
+            a battle that occurred on a specific date is slow if we have to
+            check every relationship.
+          </p>
+          <pre id="i3">
+CREATE INDEX battle_date_index IF NOT EXISTS
+FOR ()-[r:BATTLES]-() ON (r.date);
+
+MATCH ()-[r:BATTLES {date: '2026-04-01'}]-()
+RETURN r;
+
+// or for properties that often store "weights", "scores" or "distances"
+CREATE INDEX move_damage_index IF NOT EXISTS
+FOR ()-[r:USED]-() ON (r.damage);
+
+MATCH (p:Pokemon)-[r:USED]->(m:Move)
+WHERE r.damage > 100
+RETURN p.name, m.name, r.damage;
+          </pre>
+          <p>
+            <strong><code>SHOW/DROP INDEX</code></strong
+            >: We can see which indexes we have in DB and if we do not need one,
+            we can delete them. E.g.,
+          </p>
+          <pre id="i4">SHOW INDEXES YIELD *;</pre>
+          <button class="copy" onclick="copy('i4', this)">Copy</button>
+          <pre id="i5">DROP INDEX pokemon_identifier_index;</pre>
+          <button class="copy" onclick="copy('i5', this)">Copy</button>
+
+          <h3>Constraints</h3>
+          <p>
+            To ensure quality and integrity in data graph, we can use
+            <code>CONSTRAINT</code>. In Neo4j, we can set constraints that
+            ensure uniqueness of properties, existence of specific properties,
+            or restrict the type of a property. <b>Note:</b> the latter two are
+            features of <i>Enterprise Edition</i> of Neo4j, which does not work
+            on our demo applicaiton (= <i>Community Verison</i>).
+          </p>
+          <p>
+            <strong><code>CREATE CONSTRAINT</code></strong
+            >: We can create constraints for uniqueness of properties of
+            <code>Nodes</code> and <code>Edges</code>. E.g.,
+          </p>
+          <pre id="i1">
+CREATE CONSTRAINT constraint_name FOR (n:Label) REQUIRE n.property IS UNIQUE;
+CREATE CONSTRAINT constraint_name FOR ()-[r:REL_TYPE]-() REQUIRE r.property IS UNIQUE;</pre
+          >
+          <p>
+            <strong><code>SHOW/DROP CONSTRAINT</code></strong
+            >: We can check if there are any contraints and upon wish delete
+            them. E.g.,
+          </p>
+          <pre id="i1">
+SHOW CONSTRAINTS YIELD *;
+DROP CONSTRAINT constraint_name;</pre
+          >
+        </div>
+      </section>
+
+      <!-- Path/Subgraph Finding -->
+      <section class="section">
+        <h2>Path / Subgraph Finding using Graph Patterns</h2>
+        <div class="card">
+          <p>
+            We can store complete path into variables. The simplest queries are
+            those that begin with a node and end with a node. E.g.,
+            <code>MATCH p=()-[*]->() RETURN p LIMIT 10;</code>. This gives rise
+            to patterns. Graph patterns describe the structural shape of the
+            data we are searching for. These patterns help us check if a certain
+            path exists or is absent in the database. In our example, we know
+            that some Pokémon do not evolve. Let us check which Pokémon meet
+            this pattern.
+          </p>
+          <pre id="p1">
+MATCH (p:Pokemon)-[:BELONGS_TO_SPECIES]->(s:PokemonSpecies)
+WHERE NOT (s)-[:EVOLVES_FROM]-()
+RETURN p.identifier AS pokemonName
+LIMIT 25;</pre
+          >
+          <button class="copy" onclick="copy('p1', this)">Copy</button>
+          <p class="comment">
+            <i
+              >The <strong><code>()</code></strong> stands for arbitrary node
+              (we do not want to restrict in any way).</i
+            >
+          </p>
+
+          <p>
+            However, paths can alternate between nodes and edges, e.g.,
+            <code
+              >(:Station)-[:CALLS_AT|:ARRIVES_AT]-(m WHERE m.departs >
+              time('12:00'))-[:!A&!B]-(:Stop)-[:NEXT]->(n:Stop)</code
+            >. Thus, paths can have arbitrary complex patterns.
+          </p>
+          <ul>
+            <li>
+              <p>
+                <strong>Chains:</strong> We might, for example, want to find all
+                Pokémon that have only two evolution states:
+              </p>
+              <pre id="p2">
+MATCH chain = (s1:PokemonSpecies)-[:EVOLVES_FROM]->(s2:PokemonSpecies)
+WHERE NOT ()-[:EVOLVES_FROM]->(s1) AND NOT (s2)-[:EVOLVES_FROM]->()
+MATCH (p:Pokemon)-[:BELONGS_TO_SPECIES]->(s)
+WHERE s = s1 OR s = s2
+RETURN p.identifier AS pokemonName, chain;</pre
+              >
+              <button class="copy" onclick="copy('p2', this)">Copy</button>
+              <p class="comment">
+                <i
+                  >The query result gives us the start and end node (denoted as
+                  such) and also everything inbetween (as segments).
+                  <strong>Note:</strong> The
+                  <strong><code>EVOLVES_FROM</code></strong> is a relationship
+                  which connects nodes of the same type (<i>PokemonSpecies</i>)
+                  and this fact technically indicates a recursion. A recursion
+                  can be a chain of variable length or a closed loop from a node
+                  to the node itself (=cycle); this does not apply for Pokèmon
+                  example, because no Pokèmon evolves to itself in the last
+                  stage.
+                </i>
+              </p>
+              <p>
+                For Pokèmon with three evolutionary levels (final evolutions of
+                3-stage chains), we can query as following:
+              </p>
+              <pre id="p2.1">
+MATCH path=(s1:PokemonSpecies)-[:EVOLVES_FROM]->(s2:PokemonSpecies)-[:EVOLVES_FROM]->(s3:PokemonSpecies)
+WHERE NOT ()-[:EVOLVES_FROM]->(s1)
+AND NOT (s3)-[:EVOLVES_FROM]->()
+MATCH (p:Pokemon)-[:BELONGS_TO_SPECIES]->(s3)
+RETURN p.identifier AS LastEvolution, length(path) AS Levels;</pre
+              >
+              <button class="copy" onclick="copy('p2.1', this)">Copy</button>
+              <p class="comment">
+                <i
+                  >In Cypher, <code>length(path)</code> counts the relationships
+                  or the edges (the arrows). To return the number of the nodes
+                  use <code>nodes(path)</code>.
+                </i>
+              </p>
+              <p>The results are the same with following query:</p>
+              <pre id="p2.2">
+MATCH path = (s1:PokemonSpecies)-[:EVOLVES_FROM*2]->(s3:PokemonSpecies)
+WHERE NOT ()-[:EVOLVES_FROM]->(s1)
+AND NOT (s3)-[:EVOLVES_FROM]->()
+MATCH (p:Pokemon)-[:BELONGS_TO_SPECIES]->(s3)
+RETURN p.identifier AS LastEvolution, length(path) AS Levels
+ORDER BY Levels ASC;</pre
+              >
+              <button class="copy" onclick="copy('p2.2', this)">Copy</button>
+              <p class="comment">
+                <i
+                  >Syntax description:
+                  <ul
+                    style="list-style-type: square; padding-left: 10px"
+                    class="comment"
+                  >
+                    <li><code>[*]</code>: One or more iterations.</li>
+                    <li>
+                      <code>[:REL*]</code>: Infinite depth or arbitrary repeated
+                      number of REL edge (attention: can cause memory issues on
+                      large graphs!).
+                    </li>
+                    <li><code>[:REL*3]</code>: Exactly 3 hops.</li>
+                    <li>
+                      <code>[:REL*min..max]</code>: The * denotes a recursive
+                      relationship, "min" denotes the lower bound of the range
+                      and "max" the upper bound. The .. denotes a range. So, it
+                      means between min and max iterations. E.g.,
+                      <code>[:REL*1..3]</code>: Between 1 (lower boundary) and 3
+                      (upper boundary) hops.
+                    </li>
+                    <li>
+                      <code>[:REL*0..]</code>: Includes the starting node itself
+                      and the empty upper bound means no limit. The query will
+                      follow the chain until it hits a leaf node (0 or more
+                      iterations).
+                    </li>
+                    <li>
+                      <code>[:REL*..3]</code>: Up to 3 hops (between 1 and 3
+                      iterations)
+                    </li>
+                    <li>
+                      <code>[:REL*0..n]</code>: Between 0 and n iterations.
+                    </li>
+                  </ul>
+                </i>
+              </p>
+              <ul>
+                <li>
+                  <p>
+                    <strong>Variable Length Paths / Cycles: </strong> Cycles can
+                    occur if there is a circular dependency (or e.g., in money
+                    laundering).
+                    <code>(a)->(b)->(c)->(a)</code>
+                    <strong>OR</strong>
+                    <code>(a)->(b)->(c)->(d)->(a)</code>
+                  </p>
+                  <pre id="p2.3">
+MATCH p = (n)-[*1..5]->(n)
+RETURN p</pre
+                  >
+                  <p>
+                    Though cycles cannot not occur in Pokèmon example, however,
+                    variable length paths (paths of unknown depth) exist. We can
+                    restrict the depth as following. E.g., we can find all
+                    evolutions of Charmander, between 1 and 3 hops away:
+                  </p>
+                  <pre id="p2.4">
+MATCH (p1:Pokemon {identifier: 'charmander'})-[:BELONGS_TO_SPECIES]->(s1:PokemonSpecies)
+MATCH (s1)-[:EVOLVES_FROM*1..3]->(s2:PokemonSpecies)
+MATCH (evolution:Pokemon)-[:BELONGS_TO_SPECIES]->(s2)
+RETURN p1.identifier AS Base, evolution.identifier AS Evolution</pre
+                  >
+                  <button class="copy" onclick="copy('p2.4', this)">
+                    Copy
+                  </button>
+                  <p>
+                    In Neo4j 5 or above the following syntax is also correct
+                    (using <code>quantifiers</code>):
+                  </p>
+                  <pre id="p2.5">
+MATCH (p1:Pokemon {identifier: 'pikachu'})-[:BELONGS_TO_SPECIES]->(s1:PokemonSpecies)
+MATCH p = (s1)-[:EVOLVES_FROM]->{1,3}(s2:PokemonSpecies)
+MATCH (evolution:Pokemon {isDefault: true})-[:BELONGS_TO_SPECIES]->(s2)
+RETURN [n IN nodes(p) | n.id] AS speciesPath, evolution.identifier AS evolutionName;</pre
+                  >
+                  <button class="copy" onclick="copy('p2.5', this)">
+                    Copy
+                  </button>
+                  <p class="comment">
+                    <i
+                      >Usage: best for repeating a
+                      <strong>specific edge type</strong> where the nodes in
+                      between do not need special filtering. If by chance we add
+                      a filtering for the <i>evolution</i> node, the filtering
+                      would only apply to the final found node in the path and
+                      not to the intermediate nodes. Note: the
+                      <code>|</code> denotes a pipe operator. Syntax for usage:
+                      <code
+                        >[ variable IN original_list | transformation ]</code
+                      >
+                    </i>
+                  </p>
+                  <p>
+                    The following is also a valid query. For example, we can
+                    search for a Generation 1 Pokémon that evolves (1 to 3
+                    times) into a Pokémon that can learn "Solar Beam".
+                  </p>
+                  <pre id="p2.6">
+MATCH (g:Generation {id: 1})<-[:BELONGS_TO_GEN]-(baseSpecies:PokemonSpecies)
+MATCH ((baseSpecies)-[:EVOLVES_FROM]->(evolvedSpecies:PokemonSpecies)){1,3}
+MATCH (evolvedPoke:Pokemon)-[:BELONGS_TO_SPECIES]->(evolvedSpecies)
+MATCH (evolvedPoke)-[:CAN_LEARN]->(:PokemonMove)-[:IS_MOVE]->(m:Move {name: 'Solar Beam'})
+RETURN DISTINCT baseSpecies.name as Starter, evolvedPoke.identifier as FinalForm, m.power as PowerLevel
+</pre
+                  >
+                  <button class="copy" onclick="copy('p2.6', this)">
+                    Copy
+                  </button>
+                  <p class="comment">
+                    <i
+                      >Difference with the former query: the repeating targets
+                      the
+                      <strong>entire pattern segment</strong>
+                      "<code>()-[:EVOLVES_FROM]->()</code>". Here we are able to
+                      add further filtering (a <cdoe>WHERE</cdoe> clause) inside
+                      the pattern, like: <br />
+                      <code
+                        >((:Pokemon)-[:EVOLVES_FROM]->(evo:Pokemon WHERE
+                        evo.baseExperience > 50)){1,3}</code
+                      >.
+                    </i>
+                  </p>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p>
+                <strong>Diamond Shape:</strong> Find pairs of Pokémon that share
+                at least two specific types in common.
+              </p>
+              <pre id="p3.1">
+MATCH (p1:Pokemon)-[:HAS_TYPE]->(t1:Type),
+(p1)-[:HAS_TYPE]->(t2:Type),
+(p2:Pokemon)-[:HAS_TYPE]->(t1),
+(p2)-[:HAS_TYPE]->(t2)
+WHERE id(p1) < id(p2) AND t1 <> t2
+RETURN p1.identifier, p2.identifier, t1.identifier, t2.identifier</pre
+              >
+              <button class="copy" onclick="copy('p3.1', this)">Copy</button>
+              <p class="comment">
+                <i
+                  >This pattern forces the graph engine to find two different
+                  Pokémon nodes that both point to the same two Type nodes. The
+                  <code>id(p1) < id(p2)</code> check is a standard trick to
+                  avoid returning the same pair twice (e.g., Pikachu/Pachirisu
+                  and Pachirisu/Pikachu).
+                </i>
+              </p>
+            </li>
+            <li>
+              <p>
+                <strong>"V" Shape:</strong> Visually, it has a "V" form. It can
+                also be seen as a sandwich pattern. It occurs when two nodes
+                share a common neighbor but are not connected to each other
+                through any other path. The structure would be:
+              </p>
+              <pre id="p4.1">(node1)-[:EDGE]->(neighbor)<-[:EDGE]-(node2)</pre>
+              <p class="comment">
+                <i
+                  >Good for recommendation systems or suggesting friends for
+                  example. When <i>X</i> likes a <i>Friend</i> and
+                  <i>Y</i> likes the same <i>Friend</i>, and we know at some
+                  point that <i>X</i> connects with <i>Z</i>, so we can
+                  recommand <i>Y</i> to also connect with <i>Z</i>. Or
+                  similarity prediction is also possible: if
+                  <i>Pokèmon X</i> has a specific <i>Ability</i> and
+                  <i>Pokèmon Y</i> has the same <i>Ability</i>, they may be
+                  similar.
+                </i>
+              </p>
+            </li>
+            <li>
+              <p>
+                <strong>Shortest Path:</strong> we might want to find the
+                fastest way to get from a specific Pokémon to a specific Move or
+                Type, traversing through other Pokémon and their shared
+                attributes:
+              </p>
+              <pre id="p5.1">
+MATCH (p:Pokemon {identifier: 'pikachu'}), (m:Move {name: 'Solar Beam'})
+MATCH path = shortestPath((p)-[*]-(m))
+RETURN path, length(path) AS distance</pre
+              >
+              <p class="comment">
+                <i
+                  >Note: when using <code>shortestPath</code> function, the
+                  Neo4j browser, in some cases (memory issues in large graphs),
+                  might notify and ask to provide an upper bound for the
+                  relationship: <code>shortestPath((p)-[REL*..3]-(m))</code>
+                </i>
+              </p>
+              <p>
+                There is also the possibility to query the
+                <code>SHORTEST k</code> paths along the evolution path where k
+                is the number of paths to match. E.g.,
+              </p>
+              <pre id="p5.2">
+MATCH p = SHORTEST 1 (s1:PokemonSpecies)-[:EVOLVES_FROM]-+(sk:PokemonSpecies)
+WHERE s1.name = "Pichu" AND sk.name = "Raichu"
+RETURN p, length(p) AS evolution_steps, [n in nodes(p) | n.name] AS evolutions</pre
+              >
+              <p class="comment">
+                <i
+                  >The absence of arrowhead <code><</code> or
+                  <code>></code> represents the fact that Pokèmon can evolve in
+                  both directions along the
+                  <code>EVOLVE_FROM</code> relationships. The
+                  <code>+</code> quantifier means that one or more relationships
+                  should be matched.
+                </i>
+              </p>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Practice -->
+      <section class="section">
+        <h2>More Exercises</h2>
+        <h3>(in case we wish to practice and have time for it)</h3>
+        <div class="card">
+          <ol type="1">
+            <li>
+              <p>
+                <strong class="ex-label" data-ex="1">EX1:</strong>
+                Find all movies released between 1990 and 2000. Return their
+                title and released year, sorted from the newest to the oldest.
+              </p>
+            </li>
+            <li>
+              <p>
+                <strong class="ex-label" data-ex="2">EX2:</strong> Find all
+                people who acted in the movie "The Matrix". Return their name
+                and the roles they played.
+              </p>
+            </li>
+            <li>
+              <p>
+                <strong class="ex-label" data-ex="3">EX3:</strong> Identify all
+                people who have acted in a movie with "Tom Hanks". Return a
+                distinct list of their names.
+              </p>
+            </li>
+            <li>
+              <p>
+                <strong class="ex-label" data-ex="4">EX4:</strong> Find people
+                who directed a movie and also acted in that same movie. Return
+                their name and the movie title.
+              </p>
+            </li>
+            <li>
+              <p>
+                <strong class="ex-label" data-ex="5">EX5:</strong> Find the
+                shortest path of any relationship type between "Keanu Reeves"
+                and "Kevin Bacon".
+              </p>
+            </li>
+          </ol>
+        </div>
+      </section>
+    </div>
+
+    <!-- Scripts -->
+    <script src="assets/js/main.js"></script>
+  </body>
+</html>
