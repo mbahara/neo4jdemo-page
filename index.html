@@ -633,7 +633,7 @@ REMOVE s.matrNr;</pre
           </div>
 
           <p>
-            John Doe provides us with an email has his contact and Max
+            John Doe provides us with an email as his contact and Max
             Mustermann only his phone number. Insert these properties to the
             student's node. For a notification system, we want to query whatever
             contact method is available. If the property yields
@@ -662,7 +662,7 @@ RETURN s.firstname + " " + s.lastName AS name, coalesce(s.email, s.phone, "No co
             <p class="comment">
               <i>
                 <strong><code>coalesce()</code></strong> is a scalar function,
-                that returns the first on-null value in a list of expression.</i
+                that returns the first no-null value in a list of expression.</i
               >
             </p>
           </div>
