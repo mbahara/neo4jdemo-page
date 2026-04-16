@@ -6,6 +6,6 @@ This repository is prepared for introducing **Neo4j** and learning **Cypher Quer
 
 ### Launch the Database
 
-You can run the Neo4j instance using online Neo4j Aura or using Docker. Expecially, to run codes for the `Pokèmon` examples the lightweight web-based tool provided by us should be used.
+You can run the Neo4j instance using online Neo4j Aura or using Docker. Expecially, to run codes for the `Pokèmon` examples the tool provided by us should be used.
 
 > **_NOTE:_** Please make sure to copy and paste the API key the server issues when it is started. Use `[Ctrl + C]` to exit the program.
